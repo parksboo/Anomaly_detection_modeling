@@ -3,15 +3,17 @@ from fastapi import FastAPI, HTTPException, UploadFile, File
 from starlette.requests import Request
 from starlette.responses import HTMLResponse
 from PIL import Image
-from torchvision import transforms
+from torchvision import transforms, models
 import torch
+import torch.nn as nn
 import numpy as np
 import io
 
 app = FastAPI()
-
-model = torch.load(
-    '/Users/bagseongbu/Documents/SK_Anomaly_detection/bottle_AD.h5').to(torch.device('cpu'))
+DEVICE = torch.device("mps")
+model = models.vgg16().to(DEVICE)
+model.classifier[6] = nn.Linear(in_features=4096, out_features=2).to(DEVICE)
+model.load_state_dict(torch.load('../bottle_AD.pt'))
 
 # Transform 설정
 transform_MVtec = transforms.Compose([
@@ -55,3 +57,8 @@ async def read_root(request: Request):
   </body>
   </html>
 """
+
+
+@app.get("/items/{item_id}")
+def read_item(item_id: int, q: str = None):
+    return {"item_id": item_id, "q": q}
