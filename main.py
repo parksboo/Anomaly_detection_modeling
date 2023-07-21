@@ -10,10 +10,10 @@ import numpy as np
 import io
 
 app = FastAPI()
-DEVICE = torch.device("mps")
-model = models.vgg16().to(DEVICE)
-model.classifier[6] = nn.Linear(in_features=4096, out_features=2).to(DEVICE)
-model.load_state_dict(torch.load('../bottle_AD.pt'))
+model = models.vgg16()
+model.classifier[6] = nn.Linear(in_features=4096, out_features=2)
+model.load_state_dict(torch.load(
+    '../bottle_AD.pt', map_location=torch.device('mps')))
 
 # Transform 설정
 transform_MVtec = transforms.Compose([
@@ -34,8 +34,8 @@ async def predict(file: UploadFile = File(...)):
     transformed_img = transform_MVtec(image)
 
     # 예측
-    pred = model.predict(transformed_img)
-    result = np.argmax(pred)
+    pred = model(transformed_img.unsqueeze(0))
+    result = np.argmax(pred.detach().numpy())
 
     return {"result": int(result)}
 
@@ -50,7 +50,7 @@ async def read_root(request: Request):
 
     <form action="/predict" method="post" enctype="multipart/form-data">
       Select image to upload:
-        <input type="file" name="fileToUpload" id="fileToUpload">
+        <input type="file" name="file" id="fileToUpload">
         <input type="submit" value="Upload Image" name="submit">
     </form>
 
