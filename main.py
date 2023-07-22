@@ -36,8 +36,11 @@ async def predict(file: UploadFile = File(...)):
     # 예측
     pred = model(transformed_img.unsqueeze(0))
     result = np.argmax(pred.detach().numpy())
-
-    return {"result": int(result)}
+    if int(result) == 0:
+        ans = '비정상'
+    else:
+        ans = '정상'
+    return {"result": ans}
 
 
 @app.get("/", response_class=HTMLResponse)
