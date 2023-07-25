@@ -1,5 +1,4 @@
-from fastapi import FastAPI
-from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi import FastAPI, UploadFile, File
 from starlette.requests import Request
 from starlette.responses import HTMLResponse
 from PIL import Image
